@@ -6,4 +6,28 @@ before_install:
   - docker build -t wsnedker/docker-react -f Dockerfile.dev .
 
 script:
+  # To keep the test from hanging, you have to add "-- --coverage" to the command
+  # Otherwise, the app won't exit.
   - docker run wsnedker/docker-react npm run test -- --coverage
+
+deploy:
+  provider: elasticbeanstalk
+  # Obtained from AWS management. Should see:
+  # "URL: DockerReact-env.fmbvnqzgmp.us-east-2.elasticbeanstalk.com" or similar
+  # depending on your region.
+  region: "us-east-2"
+  # The name of the app on AWS.
+  app: "docker-react"
+  # Should be at the top of the management panel. Look for:
+  # All Applications > docker-react > DockerReact-env
+  env: "DockerReact-env"
+  # In AWS panel, search s3 and look for elastic beanstalk that matches your region
+  bucket_name: "elasticbeanstalk-us-east-2-749947021262"
+  bucket_path: "docker-react"
+  # When to re-deploy.
+  on:
+    # Re-deploy when master receives updated code.
+    branch: master
+  access_key_id: $AWS_ACCESS_KEY
+  secret_access_key:
+    secure: "$AWS_SECRET_KEY"
